@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07090b">
+  <meta name="description" content="XIT DOMINÓ — seu assistente estratégico de dominó, com câmera e cálculo matemático. Sem cadastro e sem enviar imagens a servidores.">
+  <link rel="icon" href="assets/xit-domino-icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="assets/xit-domino-manifest.json">
+  <link rel="stylesheet" href="xit-domino.css">
+  <title>XIT DOMINÓ</title>
+</head>
+<body>
+  <noscript><p style="padding:24px;color:#fff">O XIT DOMINÓ precisa de JavaScript ativado.</p></noscript>
+
+  <div id="app">
+
+    <!-- TELA INICIAL -->
+    <section id="screen-home" class="screen active" aria-label="Tela inicial">
+      <div class="hero">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="84" height="84">
+            <rect x="8" y="4" width="48" height="56" rx="10" fill="#0d1210" stroke="#39ff88" stroke-width="2.5"/>
+            <line x1="12" y1="32" x2="52" y2="32" stroke="#39ff88" stroke-width="2" opacity=".8"/>
+            <g fill="#39ff88"><circle cx="22" cy="16" r="4"/><circle cx="42" cy="16" r="4"/><circle cx="32" cy="16" r="0"/>
+            <circle cx="22" cy="48" r="4"/><circle cx="42" cy="48" r="4"/><circle cx="32" cy="42" r="4"/><circle cx="32" cy="54" r="0"/></g>
+          </svg>
+        </div>
+        <h1 class="brand">XIT <span>DOMINÓ</span></h1>
+        <p class="tagline">Seu assistente estratégico de dominó</p>
+        <p class="dev">Desenvolvido por <strong>Bryan</strong></p>
+        <button id="btn-start" class="btn btn-primary btn-big" type="button">COMEÇAR PARTIDA</button>
+        <button id="btn-resume" class="btn btn-ghost btn-big hidden" type="button">CONTINUAR PARTIDA</button>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat"><span class="stat-num" id="stat-wins">0</span><span class="stat-label">Partidas vencidas</span></div>
+        <div class="stat"><span class="stat-num" id="stat-played">0</span><span class="stat-label">Partidas jogadas</span></div>
+        <div class="stat"><span class="stat-num" id="stat-rate">0%</span><span class="stat-label">Vitórias</span></div>
+        <div class="stat"><span class="stat-num" id="stat-time">0s</span><span class="stat-label">Tempo total de jogo</span></div>
+        <div class="stat wide"><span class="stat-num" id="stat-tracked">0</span><span class="stat-label">Partidas acompanhadas</span></div>
+      </div>
+
+      <div class="home-actions">
+        <button id="btn-stats-panel" class="btn btn-ghost" type="button">Painel de estatísticas</button>
+        <button id="btn-settings-home" class="btn btn-ghost" type="button">Ajustes</button>
+      </div>
+
+      <div id="stats-panel" class="panel hidden">
+        <h2>Painel de estatísticas</h2>
+        <div id="stats-detail" class="stats-detail"></div>
+        <h3>Últimas partidas</h3>
+        <ul id="stats-history" class="history-list"></ul>
+        <div class="row">
+          <button id="btn-stats-export" class="btn btn-ghost" type="button">Exportar</button>
+          <button id="btn-stats-import" class="btn btn-ghost" type="button">Importar</button>
+          <button id="btn-stats-reset" class="btn btn-danger" type="button">Zerar</button>
+        </div>
+        <input id="file-stats-import" type="file" accept="application/json,.json" class="hidden">
+        <p id="stats-note" class="note"></p>
+      </div>
+      <p class="privacy">Tudo fica neste aparelho. Nenhuma imagem é enviada a servidores. Sem cadastro.</p>
+    </section>
+
+    <!-- ASSISTENTE DE CONFIGURAÇÃO -->
+    <section id="screen-setup" class="screen" aria-label="Configuração da partida">
+      <header class="topbar">
+        <button id="setup-back" class="btn btn-ghost small" type="button">Voltar</button>
+        <div class="progress"><div id="setup-progress-bar"></div></div>
+        <span id="setup-step-label" class="step-label">1/7</span>
+      </header>
+      <div class="wizard">
+        <h2 id="setup-question"></h2>
+        <p id="setup-help" class="note"></p>
+        <div id="setup-options" class="options"></div>
+        <p id="setup-error" class="error hidden"></p>
+      </div>
+      <footer class="bottombar">
+        <button id="setup-next" class="btn btn-primary btn-big" type="button">PRÓXIMO</button>
+      </footer>
+    </section>
+
+    <!-- PARTIDA -->
+    <section id="screen-game" class="screen" aria-label="Partida">
+      <header class="topbar game-top">
+        <span id="game-phase" class="phase-chip">MÃO</span>
+        <span id="game-timer" class="timer">00:00</span>
+        <button id="btn-settings-game" class="btn btn-ghost small" type="button">Ajustes</button>
+      </header>
+
+      <div class="video-wrap" id="video-wrap">
+        <video id="video" playsinline muted autoplay></video>
+        <canvas id="still" class="hidden"></canvas>
+        <canvas id="overlay"></canvas>
+        <div id="video-placeholder" class="video-placeholder">
+          <p id="video-message">Câmera desligada.</p>
+          <button id="btn-camera-start" class="btn btn-primary" type="button">LIGAR CÂMERA</button>
+        </div>
+        <div class="chips">
+          <span id="chip-quality" class="chip">Imagem: —</span>
+          <span id="chip-recognition" class="chip">Reconhecimento: —</span>
+        </div>
+      </div>
+      <p id="quality-hints" class="note hints"></p>
+
+      <div class="controls">
+        <button id="btn-camera-pause" class="btn btn-ghost small" type="button">Pausar câmera</button>
+        <button id="btn-calibrate" class="btn btn-ghost small" type="button">Calibrar</button>
+        <button id="btn-correct" class="btn btn-ghost small" type="button">Corrigir reconhecimento</button>
+        <button id="btn-switch-camera" class="btn btn-ghost small" type="button">Trocar câmera</button>
+        <button id="btn-import-photo" class="btn btn-ghost small" type="button">Importar foto</button>
+        <input id="file-photo" type="file" accept="image/*" class="hidden">
+      </div>
+
+      <div id="calibration-panel" class="panel hidden">
+        <h3>Calibração</h3>
+        <p class="note">Escolha o que marcar e arraste o dedo sobre o vídeo para desenhar a área.</p>
+        <div class="row">
+          <button id="cal-hand" class="btn btn-primary small" type="button">Marcar MINHA MÃO</button>
+          <button id="cal-table" class="btn btn-ghost small" type="button">Marcar MESA</button>
+        </div>
+        <button id="cal-auto" class="btn btn-ghost" type="button">Calibrar peças automaticamente</button>
+        <p id="cal-result" class="note"></p>
+        <div class="row">
+          <button id="cal-reset" class="btn btn-ghost small" type="button">Restaurar padrão</button>
+          <button id="cal-save" class="btn btn-primary small" type="button">Salvar e fechar</button>
+        </div>
+      </div>
+
+      <div id="alerts" class="alerts"></div>
+      <div id="proposal" class="panel proposal hidden"></div>
+
+      <!-- fase: distribuição (definir mão) -->
+      <div id="deal-panel" class="panel hidden">
+        <h2>Sua mão e quem começa</h2>
+        <p id="deal-help" class="note"></p>
+        <div id="deal-hand" class="tile-row"></div>
+        <div class="row">
+          <button id="deal-from-camera" class="btn btn-ghost" type="button">Usar peças reconhecidas</button>
+          <button id="deal-add-manual" class="btn btn-ghost" type="button">Adicionar peça</button>
+          <button id="deal-clear" class="btn btn-ghost" type="button">Limpar</button>
+        </div>
+        <h3>Quem começa?</h3>
+        <div id="deal-starter" class="options inline"></div>
+        <p id="deal-error" class="error hidden"></p>
+        <button id="deal-start" class="btn btn-primary btn-big" type="button">INICIAR PARTIDA</button>
+      </div>
+
+      <!-- fase: partida -->
+      <div id="play-panel" class="hidden">
+        <div id="best-move" class="panel best"></div>
+
+        <div class="panel">
+          <h3>Painel de acompanhamento</h3>
+          <div id="dashboard" class="dashboard"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Minhas peças</h3>
+          <div id="my-tiles" class="tile-row"></div>
+          <h3>Peças na mesa</h3>
+          <div id="table-tiles" class="tile-row chain"></div>
+          <p id="chain-problems" class="error hidden"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Registrar manualmente</h3>
+          <div class="row wrap">
+            <button id="act-play" class="btn btn-ghost small" type="button">Registrar jogada</button>
+            <button id="act-pass" class="btn btn-ghost small" type="button">Passou a vez</button>
+            <button id="act-draw" class="btn btn-ghost small" type="button">Comprou peça</button>
+            <button id="act-undo" class="btn btn-ghost small" type="button">Desfazer</button>
+            <button id="act-block" class="btn btn-ghost small" type="button">Jogo fechou</button>
+            <button id="act-end" class="btn btn-danger small" type="button">Encerrar partida</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Últimas jogadas</h3>
+          <ol id="history" class="history-list"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTADO -->
+    <section id="screen-result" class="screen" aria-label="Resultado">
+      <div class="result">
+        <div id="result-emoji" class="result-emoji" aria-hidden="true">🏆</div>
+        <h1 id="result-title">VOCÊ GANHOU!</h1>
+        <p id="result-quote" class="result-quote"></p>
+        <div class="stats-grid small" id="result-stats"></div>
+        <button id="result-new" class="btn btn-primary btn-big" type="button">NOVA PARTIDA</button>
+        <button id="result-home" class="btn btn-ghost btn-big" type="button">VOLTAR AO INÍCIO</button>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script type="module" src="xit-domino.js"></script>
+</body>
+</html>
