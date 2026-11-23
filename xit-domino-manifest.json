@@ -1,0 +1,13 @@
+{
+  "name": "XIT DOMINÓ",
+  "short_name": "XIT DOMINÓ",
+  "description": "Seu assistente estratégico de dominó",
+  "start_url": "../index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07090b",
+  "theme_color": "#07090b",
+  "icons": [
+    { "src": "xit-domino-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
